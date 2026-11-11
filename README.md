@@ -2,9 +2,11 @@
 
 Crée ton propre dex, comme Archidekt pour les decks Magic : un dex regroupe des créatures rangées par catégories, avec leurs types, talents, capacités et chaînes d'évolution. Connexion avec Google via Supabase Auth.
 
-![Démo de Fakedex : parcourir un dex, créer la créature Brumaje avec son image, lui ajouter un talent et une capacité, puis la relier à Brumerok dans la chaîne d'évolution](docs/demo.gif)
+<video src="https://github.com/alexisbcz/fakedex/raw/main/docs/demo.mp4" controls width="100%"></video>
 
-[Vidéo de la démo en MP4](docs/demo.mp4) (55 s)
+![Démo de Fakedex, sous-titrée : l'accueil, un dex, la fiche de Brumelin, la table des types, puis la création de Brumaje avec son talent, sa capacité et son évolution depuis Brumerok](docs/demo.gif)
+
+[Démo commentée en MP4](docs/demo.mp4) (1 min 30, avec le son)
 
 Stack : Next.js 16 (App Router, Server Actions), Tailwind CSS 4, Supabase (Postgres + RLS, Auth, Storage).
 
