@@ -2,6 +2,10 @@
 
 Crée ton propre dex, comme Archidekt pour les decks Magic : un dex regroupe des créatures rangées par catégories, avec leurs types, talents, capacités et chaînes d'évolution. Connexion avec Google via Supabase Auth.
 
+![Démo de Fakedex : parcourir un dex, créer la créature Brumaje avec son image, lui ajouter un talent et une capacité, puis la relier à Brumerok dans la chaîne d'évolution](docs/demo.gif)
+
+[Vidéo de la démo en MP4](docs/demo.mp4) (55 s)
+
 Stack : Next.js 16 (App Router, Server Actions), Tailwind CSS 4, Supabase (Postgres + RLS, Auth, Storage).
 
 ## Modèle de données
