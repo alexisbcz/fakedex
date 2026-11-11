@@ -1,69 +1,73 @@
-import Image from "next/image";
+import Link from "next/link";
+import { ButtonLink, Empty, Section } from "@/components/ui";
+import { getUser } from "@/lib/supabase/server";
 
-export default function Home() {
+type DexRow = {
+  id: string;
+  name: string;
+  description: string | null;
+  is_public: boolean;
+  owner: { display_name: string | null } | null;
+  creatures: { count: number }[];
+};
+
+function DexList({ dexes }: { dexes: DexRow[] }) {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {dexes.map((dex) => (
+        <li key={dex.id}>
+          <Link
+            href={`/dex/${dex.id}`}
+            className="block h-full rounded-lg border border-stone-200 bg-white p-4 transition-colors hover:border-stone-400"
           >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="font-medium">{dex.name}</span>
+              <span className="text-xs tabular-nums text-stone-500">
+                {dex.creatures[0]?.count ?? 0} créatures
+              </span>
+            </div>
+            {dex.description && <p className="mt-1 line-clamp-2 text-sm text-stone-600">{dex.description}</p>}
+            <p className="mt-3 text-xs text-stone-500">
+              par {dex.owner?.display_name ?? "anonyme"}
+              {!dex.is_public && " · privé"}
+            </p>
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+export default async function Home() {
+  const { supabase, user } = await getUser();
+  const select = "id, name, description, is_public, owner:profiles(display_name), creatures(count)";
+
+  const [{ data: mine }, { data: recent }] = await Promise.all([
+    user
+      ? supabase.from("dexes").select(select).eq("owner_id", user.id).order("updated_at", { ascending: false })
+      : Promise.resolve({ data: [] as DexRow[] }),
+    supabase.from("dexes").select(select).eq("is_public", true).order("updated_at", { ascending: false }).limit(30),
+  ]);
+
+  return (
+    <div className="space-y-10">
+      <div className="max-w-xl space-y-2">
+        <h1 className="text-2xl font-semibold tracking-tight">Crée ton propre dex</h1>
+        <p className="text-stone-600">
+          Invente des créatures, leurs types, leurs talents, leurs capacités et leurs chaînes d’évolution, puis
+          partage le dex.
+        </p>
+      </div>
+
+      {user && (
+        <Section title="Mes dex" action={<ButtonLink href="/dex/new">Nouveau dex</ButtonLink>}>
+          {mine?.length ? <DexList dexes={mine as DexRow[]} /> : <Empty>Tu n’as pas encore de dex.</Empty>}
+        </Section>
+      )}
+
+      <Section title="Dex publics récents">
+        {recent?.length ? <DexList dexes={recent as DexRow[]} /> : <Empty>Aucun dex public pour l’instant.</Empty>}
+      </Section>
     </div>
   );
 }
